@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>📚 Manga Combiner</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='js/tree.js') }}" defer></script>
+</head>
+<body>
+  <header>
+    <h1>📚 Manga Combiner</h1>
+    <nav>
+      <button onclick="location.href='/settings'">⚙ Settings</button>
+      <button onclick="loadTree()">🔄 Rescan</button>
+      <button onclick="location.href='/history'">📜 History</button>
+    </nav>
+  </header>
+
+  <div id="status-banner" class="hidden">
+    <span id="status-text">Processing...</span>
+    <span class="spinner"></span>
+  </div>
+
+  <main>
+    <section id="folder-tree">
+      <h2>Manga Folders</h2>
+      <ul id="tree"></ul>
+    </section>
+
+    <section id="chapters">
+      <h2>Chapters</h2>
+      <ul id="chapter-list"><li>Select a folder to view chapters</li></ul>
+
+      <div id="combine-panel" class="hidden">
+        <h3>📦 Combine Selected Chapters</h3>
+        <label>Volume Name:
+          <input id="volume-name" placeholder="Volume_01">
+        </label>
+        <div class="buttons">
+          <button id="btn-pdf" class="pdf">📕 Combine as PDF</button>
+          <button id="btn-cbz" class="cbz">📘 Combine as CBZ</button>
+        </div>
+        <p class="export-path">Export to: {{ export_path }}</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Export Path: {{ export_path }}</p>
+  </footer>
+</body>
+</html>

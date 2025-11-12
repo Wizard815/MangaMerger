@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>📜 Combine History</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script>
+    async function deleteEntry(manga, volume) {
+      if (!confirm(`Delete ${volume} from ${manga}?`)) return;
+      const res = await fetch("/api/history/delete", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({manga, volume})
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("✅ Entry deleted");
+        location.reload();
+      } else {
+        alert("❌ " + (data.error || "Delete failed"));
+      }
+    }
+
+    async function deleteVolumeInsideModal(manga, volume) {
+      if (!confirm(`Delete ${volume} from ${manga}?`)) return;
+      const res = await fetch("/api/history/delete", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({manga, volume})
+      });
+      const data = await res.json();
+      if (data.success) {
+        // refresh the modal to show the updated list
+        await viewFullLog(manga);
+      } else {
+        alert("❌ " + (data.error || "Delete failed"));
+      }
+    }
+
+    async function viewFullLog(manga) {
+      const res = await fetch("/api/history/view", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({manga})
+      });
+      const data = await res.json();
+      const modal = document.getElementById("log-modal");
+      const content = document.getElementById("log-content");
+
+      if (data.success) {
+        const history = data.data;
+        let html = `<h2>${manga} — Full History</h2>`;
+        html += `<table class='history-table'>
+                   <tr><th>Volume</th><th>Type</th><th>Date</th><th>Chapters</th><th>Actions</th></tr>`;
+        for (const [vol, info] of Object.entries(history)) {
+          html += `<tr>
+                     <td>${vol}</td>
+                     <td>${info.type || "?"}</td>
+                     <td>${info.date || "?"}</td>
+                     <td>${(info.chapters || []).join(", ")}</td>
+                     <td><button onclick="deleteVolumeInsideModal('${manga}','${vol}')">🗑 Delete</button></td>
+                   </tr>`;
+        }
+        html += `</table>`;
+        content.innerHTML = html;
+        modal.classList.remove("hidden");
+      } else {
+        content.innerHTML = `<p style="color:red;">${data.error || "Failed to load history."}</p>`;
+        modal.classList.remove("hidden");
+      }
+    }
+
+    function closeModal() {
+      document.getElementById("log-modal").classList.add("hidden");
+    }
+  </script>
+</head>
+<body>
+  <header>
+    <h1>📜 Combine History</h1>
+    <nav>
+      <button onclick="location.href='/'">🏠 Home</button>
+      <button onclick="location.href='/settings'">⚙ Settings</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="history-list">
+      {% if histories %}
+      <table class="history-table">
+        <tr>
+          <th>Manga</th>
+          <th>Last Combined</th>
+          <th>Last Volume</th>
+          <th>Last Chapter</th>
+          <th>Actions</th>
+        </tr>
+        {% for h in histories %}
+        <tr>
+          <td>{{ h.manga }}</td>
+          <td>{{ h.last_date }}</td>
+          <td>{{ h.last_volume }}</td>
+          <td>{{ h.last_chapter }}</td>
+          <td>
+            <button onclick="viewFullLog('{{h.manga}}')">📖 View Log</button>
+            <button onclick="deleteEntry('{{h.manga}}', '{{h.last_volume}}')">🗑 Delete</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% else %}
+      <p>No history found yet.</p>
+      {% endif %}
+    </section>
+  </main>
+
+  <div id="log-modal" class="modal hidden">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal()">✖</button>
+      <div id="log-content"></div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Return to <a href="/">Home</a></p>
+  </footer>
+</body>
+</html>

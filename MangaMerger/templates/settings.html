@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>⚙ Settings</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script>
+    async function saveSettings() {
+      const data = {
+        main_path: document.getElementById("main_path").value,
+        export_path: document.getElementById("export_path").value,
+        port: parseInt(document.getElementById("port").value),
+        sort_mode: document.getElementById("sort_mode").value
+      };
+      const res = await fetch("/settings", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+      });
+      if (res.ok) alert("✅ Settings saved. Restart needed if port changed.");
+    }
+  </script>
+</head>
+<body>
+  <header>
+    <h1>⚙ Settings</h1>
+    <nav>
+      <button onclick="location.href='/'">🏠 Home</button>
+      <button onclick="location.href='/settings'">⚙ Settings</button>
+      <button onclick="location.href='/history'">📜 History</button>
+    </nav>
+  </header>
+
+  <main style="padding:20px;">
+    <p>Main Path:</p>
+    <input id="main_path" style="width:80%;" value="{{ config.main_path }}"><br><br>
+
+    <p>Export Path:</p>
+    <input id="export_path" style="width:80%;" value="{{ config.export_path }}"><br><br>
+
+    <p>Port:</p>
+    <input id="port" type="number" value="{{ config.port }}"><br><br>
+
+    <p>Chapter Sort Mode:</p>
+    <select id="sort_mode">
+      <option value="name" {% if config.sort_mode == 'name' %}selected{% endif %}>Name (A–Z)</option>
+      <option value="date" {% if config.sort_mode == 'date' %}selected{% endif %}>Date Modified (oldest first)</option>
+    </select><br><br>
+
+    <button onclick="saveSettings()">💾 Save Changes</button>
+    <button onclick="location.href='/'">↩ Cancel</button>
+  </main>
+</body>
+</html>
